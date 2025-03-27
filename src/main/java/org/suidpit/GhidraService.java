@@ -26,8 +26,10 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 import ghidra.app.decompiler.DecompInterface;
+import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Variable;
+import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.util.Msg;
 
@@ -61,7 +63,6 @@ public class GhidraService {
         return null;
     }
 
-
     private Function getFunctionByName(String name) {
         var functions = plugin.getCurrentProgram().getFunctionManager().getFunctions(true);
         for (Function function : functions) {
@@ -71,7 +72,6 @@ public class GhidraService {
         }
         return null;
     }
-
 
     @Tool(description = "Decompile function by name")
     public String decompileFunctionByName(String name) {
@@ -88,7 +88,6 @@ public class GhidraService {
         }
         return decompiled.getDecompiledFunction().getC();
     }
-
 
     @Tool(description = "Rename function")
     public void renameFunction(String functionName, String newName) {
@@ -144,7 +143,6 @@ public class GhidraService {
         }
     }
 
-
     @Tool(description = "Rename local variable in function")
     public void renameLocalVariableInFunction(String functionName, String variableName,
             String newName) {
@@ -160,8 +158,8 @@ public class GhidraService {
                     // In case I need to commit
                     for (Variable var : function.getAllVariables()) {
                         if (var.getName().equals(variableName)) {
-                                var.setName(newName, SourceType.USER_DEFINED);
-                                success.set(true);
+                            var.setName(newName, SourceType.USER_DEFINED);
+                            success.set(true);
                         }
                     }
                 } catch (Exception e) {
@@ -176,5 +174,29 @@ public class GhidraService {
         if (!success.get()) {
             Msg.error(plugin, "Failed to rename local variable in function");
         }
+    }
+
+    @Tool(description = "Get references to address. Returns a list of addresses and code units that reference the address.")
+    public List<String> getReferencesToAddress(String address) {
+        var references = plugin.getCurrentProgram().getReferenceManager().getReferencesTo(
+                plugin.getCurrentProgram().getAddressFactory().getAddress(address));
+        var result = new ArrayList<String>();
+        for (Reference ref : references) {
+            result.add(ref.getFromAddress().toString() + " | "
+                    + plugin.getCurrentProgram().getListing().getCodeUnitAt(ref.getFromAddress()).toString());
+        }
+        return result;
+    }
+
+    @Tool(description = "Get references from address. Returns a list of addresses and code units that are referenced from the address.")
+    public List<String> getReferencesFromAddress(String address) {
+        var references = plugin.getCurrentProgram().getReferenceManager().getReferencesFrom(
+                plugin.getCurrentProgram().getAddressFactory().getAddress(address));
+        var result = new ArrayList<String>();
+        for (Reference ref : references) {
+            result.add(ref.getToAddress().toString() + " | "
+                    + plugin.getCurrentProgram().getListing().getCodeUnitAt(ref.getToAddress()).toString());
+        }
+        return result;
     }
 }
