@@ -1,0 +1,10 @@
+server:
+  port: 8888
+  shutdown: immediate
+spring:
+  ai:
+    mcp:
+      server:
+        name: webflux-mcp-server
+        type: ASYNC
+        port: 8888
