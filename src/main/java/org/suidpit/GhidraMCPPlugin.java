@@ -15,23 +15,11 @@
  */
 package org.suidpit;
 
-import java.awt.BorderLayout;
-
-import javax.swing.*;
-
-
-import docking.ActionContext;
-import docking.ComponentProvider;
-import docking.action.DockingAction;
-import docking.action.ToolBarData;
 import ghidra.app.DeveloperPluginPackage;
 import ghidra.app.plugin.PluginCategoryNames;
 import ghidra.app.plugin.ProgramPlugin;
 import ghidra.framework.plugintool.*;
 import ghidra.framework.plugintool.util.PluginStatus;
-import ghidra.util.HelpLocation;
-import ghidra.util.Msg;
-import resources.Icons;
 
 /**
  * Provide class-level documentation that describes what this plugin does.
@@ -47,8 +35,6 @@ import resources.Icons;
 //@formatter:on
 public class GhidraMCPPlugin extends ProgramPlugin {
 
-	private MyProvider provider;
-
 	/**
 	 * Plugin constructor.
 	 * 
@@ -56,15 +42,6 @@ public class GhidraMCPPlugin extends ProgramPlugin {
 	 */
 	public GhidraMCPPlugin(PluginTool tool) {
 		super(tool);
-
-		// Customize provider (or remove if a provider is not desired)
-		String pluginName = getName();
-		provider = new MyProvider(this, pluginName);
-
-		// Customize help (or remove if help is not desired)
-		String topicName = this.getClass().getPackage().getName();
-		String anchorName = "HelpAnchor";
-		provider.setHelpLocation(new HelpLocation(topicName, anchorName));
 	}
 
 	@Override
@@ -81,46 +58,5 @@ public class GhidraMCPPlugin extends ProgramPlugin {
 	public void dispose() {
 		McpServerApplication.stopServer();
 		super.dispose();
-	}
-
-	// If provider is desired, it is recommended to move it to its own file
-	private static class MyProvider extends ComponentProvider {
-
-		private JPanel panel;
-		private DockingAction action;
-
-		public MyProvider(Plugin plugin, String owner) {
-			super(plugin.getTool(), "GhidraMCP Provider", owner);
-			buildPanel();
-			createActions();
-		}
-
-		// Customize GUI
-		private void buildPanel() {
-			panel = new JPanel(new BorderLayout());
-			JTextArea textArea = new JTextArea(5, 25);
-			textArea.setEditable(false);
-			panel.add(new JScrollPane(textArea));
-			setVisible(true);
-		}
-
-		// Customize actions
-		private void createActions() {
-			action = new DockingAction("My Action", getOwner()) {
-				@Override
-				public void actionPerformed(ActionContext context) {
-					Msg.showInfo(getClass(), panel, "Custom Action", "Hello!");
-				}
-			};
-			action.setToolBarData(new ToolBarData(Icons.ADD_ICON, null));
-			action.setEnabled(true);
-			action.markHelpUnnecessary();
-			dockingTool.addLocalAction(this, action);
-		}
-
-		@Override
-		public JComponent getComponent() {
-			return panel;
-		}
 	}
 }
