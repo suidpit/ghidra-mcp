@@ -42,6 +42,7 @@ In its current status, this Ghidra MCP plugin exposes the following tools:
 - Rename local variables
 - Comment functions
 - Get references from/to address
+- Search for strings in memory
 
 It's mostly an experiment right now, but I'm eager to tinker with it and really understand how useful it can be for serious reverse engineering tasks.
 

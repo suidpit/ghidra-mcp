@@ -26,11 +26,13 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 import ghidra.app.decompiler.DecompInterface;
+import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Variable;
 import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.SourceType;
+import ghidra.program.util.string.FoundString;
 import ghidra.util.Msg;
 
 @Service
@@ -196,6 +198,20 @@ public class GhidraService {
         for (Reference ref : references) {
             result.add(ref.getToAddress().toString() + " | "
                     + plugin.getCurrentProgram().getListing().getCodeUnitAt(ref.getToAddress()).toString());
+        }
+        return result;
+    }
+
+    @Tool(description = "Search for strings in the program. Right now it only finds strings containing the query string. Minimum length is 5 characters.")
+    public List<String> searchForStrings(String string) {
+        var result = new ArrayList<String>();
+        FlatProgramAPI flatProgramAPI = new FlatProgramAPI(plugin.getCurrentProgram());
+        var foundStrings = flatProgramAPI.findStrings(null, 5, 1, true, true);
+        for (FoundString foundString : foundStrings) {
+            if (foundString.getString(plugin.getCurrentProgram().getMemory()).contains(string)) {
+                result.add(foundString.getAddress().toString() + " | "
+                        + foundString.getString(plugin.getCurrentProgram().getMemory()));
+            }
         }
         return result;
     }
