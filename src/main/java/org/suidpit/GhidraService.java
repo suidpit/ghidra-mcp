@@ -202,6 +202,24 @@ public class GhidraService {
         return result;
     }
 
+    @Tool(description = "Get function callers. Returns a list of functions that call the given function.")
+    public List<String> getFunctionCallers(String functionName) {
+        var function = getFunctionByName(functionName);
+        var result = new ArrayList<String>();
+        if (function == null) {
+            throw new IllegalArgumentException("Function not found");
+        }
+        var references = plugin.getCurrentProgram().getReferenceManager().getReferencesTo(function.getEntryPoint());
+        for (Reference ref : references) {
+            var fromAddress = ref.getFromAddress();
+            var caller = plugin.getCurrentProgram().getFunctionManager().getFunctionContaining(fromAddress);
+            if (caller != null) {
+                result.add(caller.getName());
+            }
+        }
+        return result;
+    }
+
     @Tool(description = "Search for strings in the program. Right now it only finds strings containing the query string. Minimum length is 5 characters.")
     public List<String> searchForStrings(String string) {
         var result = new ArrayList<String>();
